@@ -1,0 +1,53 @@
+Write ALP to print “Hallo World!” Program using 16, 32 and 64-bit model and segmentation.
+
+section .data 					;Data segment 
+
+	userMsg db 'Hello SIT: ' 		;Ask the user to enter a message 
+	lenUserMsg equ $-userMsg 		;The length of the message
+	dispMsg db 'I Am Krishna: ' 
+	lenDispMsg equ $-dispMsg 
+
+
+
+section .text 					;Code Segment 
+	global 	_start
+		
+		_start: 			
+		
+		;1st message display 'Hello SIT:'
+
+		mov eax, 4 			;sys call for write purpose
+		mov ebx, 1 			;sys call for file discreptor
+		mov ecx, userMsg 		;locate msg in cx
+		mov edx, lenUserMsg 		;locate length in dx
+		int 80h 			; system call
+
+		;2st message display 'I AM KRISHNA:'
+
+		mov eax, 4 			;sys call for write purpose
+		mov ebx, 1 			;sys call for file discreptor
+		mov ecx, dispMsg 		;locate msg in cx
+		mov edx, lenDispMsg 		;locate length in dx
+		int 80h 			; system call
+
+
+		; exit the program
+		
+		mov eax,1
+		mov ebx,0
+		int 80h
+--------------------------------------------------------------------------------------------
+Out put
+
+		[student@localhost]$ nasm -f elf64 MAL1.asm
+
+		[student@localhost]$ ld -o MAL1 MAL1.o
+
+		[student@localhost]$ ./MAL1
+
+		Hello SIT:
+		I Am Krishna:
+
+
+
+

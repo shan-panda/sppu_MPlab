@@ -1,0 +1,132 @@
+ 
+section .data
+welmsg db 10,'Multiplication using successive addition',10
+welmsg_len equ $-welmsg
+nummsg db 10,'Enter two digits of Number::'
+nummsg_len equ $-nummsg
+resmsg db 10,'Multiplication of elements::'
+resmsg_len equ $-resmsg
+blankmsg db 10,'',10
+blank_len equ $-blankmsg
+
+;------------------------------------------------------------------------
+
+section .bss
+numascii resb 03
+multi1 resb 01
+resl resb 01
+resh resb 01
+dispbuff resb 04
+;-----------------------------------------------------------------------
+
+
+%macro dispmsg 2
+mov rax,1
+mov rdi,1
+mov rsi,%1
+mov rdx,%2
+syscall
+%endmacro
+
+%macro accept 2
+mov rax,0
+mov rdi,0
+mov rsi,%1
+mov rdx,%2
+syscall
+%endmacro
+
+
+;-------------------------------------------------------------
+
+
+
+
+section .text
+global _start
+_start:
+dispmsg welmsg,welmsg_len
+
+dispmsg nummsg,nummsg_len
+accept numascii,3
+
+call packnum
+mov [multi1],bl
+
+dispmsg nummsg,nummsg_len
+accept numascii,3
+call packnum
+mov ecx,00h
+mov eax,[multi1] ; get multiplier in EAX
+
+addup:
+
+add ecx,eax
+dec bl
+jnz addup
+
+mov [resl],ecx
+dispmsg resmsg,resmsg_len
+mov ebx,[resl]
+
+call disp16_proc
+
+dispmsg blankmsg,blank_len
+mov eax,01 ;Exit
+mov ebx,00
+int 80h
+
+packnum:  ;e.g. 12  unpack 31 32= 12pack
+mov bl,0
+mov ecx,02
+mov esi,numascii
+up1:
+rol bl,04
+mov al,[esi]
+cmp al,39h
+jbe sub30
+sub al,07h
+sub30: sub al,30h
+add bl,al
+inc esi
+loop up1
+ret
+
+disp16_proc:
+mov ecx,4
+mov edi,dispbuff
+dup1:
+rol bx,4
+mov al,bl
+and al,0fh
+cmp al,09
+jbe dskip
+add al,07h
+dskip: add al,30h
+mov [edi],al
+inc edi
+loop dup1
+
+dispmsg dispbuff,4
+ret
+
+--------------------------
+output
+
+linux-notebook@linux-notebook:~/Documents$ nasm -f elf64 MPL10B.asm
+linux-notebook@linux-notebook:~/Documents$ ld -o MPL10B  MPL10B.o
+linux-notebook@linux-notebook:~/Documents$ ./MPL10B
+
+Multiplication using successive addition
+
+Enter two digits of Number::12
+
+Enter two digits of Number::12
+
+Multiplication of elements::0144
+
+linux-notebook@linux-notebook:~/Documents$ 
+
+
+
+

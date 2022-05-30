@@ -1,0 +1,68 @@
+Write an ALP to accept five 64 bit Hexadecimal numbers from user and store then in data segment table and display then numbers.
+
+
+section .data 					;Data segment 
+userMsg db 'Please enter a number: ' 	;Ask the user to enter a 								;number 
+	lenUserMsg equ $-userMsg 		;The length of the message
+	dispMsg db 'You have entered: ' 
+	lenDispMsg equ $-dispMsg 
+
+section .bss 					;Uninitialized data 
+	num resb 5 
+
+section .text 					;Code Segment 
+	global 	_start
+		
+		_start: 			
+		
+		;1st message display 'Please enter a number:'
+
+	mov eax, 4 		;sys call for write purpose
+	mov ebx, 1 		;sys call for file discreptor
+	mov ecx, userMsg 	;locate msg in cx
+	mov edx, lenUserMsg 	;locate length in dx
+	int 80h 			; system call
+
+		;Read and store the user input 
+		
+	mov eax, 3		;sys call reading input 
+	mov ebx, 2		;sys call for store input in to variable 
+	mov ecx, num	;store input in num 
+	mov edx, 5 	;5 bytes (numeric, 1 for sign) of that 					;information 
+	int 80h
+ 
+		;2nd message display 'You have entered : ' 
+
+		mov eax, 4 
+		mov ebx, 1 
+		mov ecx, dispMsg 
+		mov edx, lenDispMsg 
+		int 80h 
+
+		;Output the number entered 
+	
+		mov eax, 4 
+		mov ebx, 1 
+		mov ecx, num 
+		mov edx, 5 
+		int 80h 
+	
+		; Exit code 
+	
+		mov eax, 1 
+		mov ebx, 0 
+		int 80h 
+----------------------------------------------------------------------------------------------------------
+
+
+Output 
+
+		[student@localhost]$ nasm -f elf64 MPL1.asm
+
+		[student@localhost]$ ld -o MPL1 MAL2.o
+
+		[student@localhost]$ ./MPL1
+
+		Please enter a number: 1234 
+
+		You have entered:1234

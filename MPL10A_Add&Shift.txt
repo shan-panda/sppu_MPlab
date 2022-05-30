@@ -1,0 +1,137 @@
+section .data
+welmsg db 10,'Multiplication using add and shift method',10
+welmsg_len equ $-welmsg
+nummsg db 10,'Enter two digits of Number::'
+nummsg_len equ $-nummsg
+resmsg db 10,'Multiplication of elements::'
+resmsg_len equ $-resmsg
+blankmsg db 10,'',10
+blank_len equ $-blankmsg
+
+
+;-------------------------------------------------------------
+
+section .bss
+numascii resb 03
+multi1 resb 02
+resl resb 02
+multi2 resb 02
+dispbuff resb 04
+
+
+;------------------------------------------------------------
+
+
+%macro dispmsg 2
+mov rax,1
+mov rdi,1
+mov rsi,%1
+mov rdx,%2
+syscall
+%endmacro
+
+%macro accept 2
+mov rax,0
+mov rdi,0
+mov rsi,%1
+mov rdx,%2
+syscall
+%endmacro
+
+
+;----------------------------------------------------------
+
+
+section .text
+global _start
+_start:
+dispmsg welmsg,welmsg_len
+dispmsg nummsg,nummsg_len
+accept numascii,3
+call packnum
+mov [multi1],bl
+
+dispmsg nummsg,nummsg_len
+accept numascii,3
+call packnum
+mov [multi2],bl
+
+mov al,[multi1]
+
+mov cl,0  ;shift cntr
+mov edx,0  ;
+mov edx,08h   ;8 bit cntr
+addup:
+	rcr al,01  ;rotate right al 1 bit through carry
+	jnc next1   ;jmp if not carry(0)
+	mov bh,00h
+	shl bx,cl   ;shift by cl then add
+	add [resl],bx
+	mov bl,[multi2]
+next1: 	inc cl
+       	dec edx    
+jnz addup
+
+
+dispmsg resmsg,resmsg_len
+mov bx,[resl]
+
+call disp16_proc
+
+dispmsg blankmsg,blank_len
+mov eax,01 ;Exit
+mov ebx,00
+int 80h
+
+packnum:
+mov bl,0
+mov ecx,02
+mov esi,numascii
+up1:
+rol bl,04
+mov al,[esi]
+cmp al,39h
+jbe skip1
+sub al,07h
+skip1: sub al,30h
+add bl,al
+inc esi
+loop up1
+ret
+
+disp16_proc:
+mov ecx,4
+mov edi,dispbuff
+dup1:
+rol bx,4
+mov al,bl
+and al,0fh
+cmp al,09
+jbe dskip
+add al,07h
+dskip: add al,30h
+mov [edi],al
+inc edi
+loop dup1
+
+dispmsg dispbuff,4
+ret
+
+----------------------------------------
+output
+
+linux-notebook@linux-notebook:~/Documents$ nasm -f elf64 MPL10A.asm
+linux-notebook@linux-notebook:~/Documents$ ld -o MPL10A  MPL10A.o
+linux-notebook@linux-notebook:~/Documents$ ./MPL10A
+
+Multiplication using add and shift method
+
+Enter two digits of Number::11
+
+Enter two digits of Number::10
+
+Multiplication of elements::0110
+
+linux-notebook@linux-notebook:~/Documents$ 
+
+

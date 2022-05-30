@@ -1,0 +1,204 @@
+;Write an ALP to perform arithmetic and logical operations using ‘n’, 32-bit and 64-bit numbers
+;stored in an array using 64 bit register operations.
+
+; 	Find largest number from the array of 64-bit numbers.
+
+;	Program first displays all the elements of array.
+
+;	Then it search for largest number and display the same.
+
+
+section .data
+
+	
+
+
+arr_msg db 'Array Elements Are:: ',10
+	
+arr_len : equ $-arr_msg
+
+	
+
+larg_msg db 'Largest Number is::'
+	
+larg_len: equ $-larg_msg
+
+	
+
+nwline db 10
+
+	
+
+array dq 0fa100001h,0b200002h,0fff0003h,0d400004h, 0500005h		;array elements
+	arrcnt dd 05h
+
+
+
+section .bss
+	
+
+dnum_buff resb 16
+	
+
+large resq 1
+
+
+
+
+%macro dispmsg 2
+	
+
+mov eax,4	;System call for write
+	
+mov ebx,1	;standard output stream
+	
+mov ecx,%1	;message start address
+	
+mov edx,%2	;message length
+	
+int 80h
+
+%endmacro
+
+
+
+section .text
+	
+
+global _start
+
+
+	_start:
+	
+	
+	
+		dispmsg arr_msg,arr_len
+	
+		
+		mov esi,array
+	
+		mov ecx,[arrcnt]
+
+	
+up1:	mov rbx,[esi]
+	
+		push rcx
+	
+		call disp_num
+	
+		dispmsg nwline,1
+	
+		pop rcx
+		
+		add esi,08	;Point to next element
+
+	
+		loop up1
+
+	
+		
+		mov esi,array
+	
+		mov ecx,[arrcnt]
+	
+		mov rax,[esi]
+	
+		dec ecx
+
+
+		lup1:	add esi,08	;Point to next element
+	
+		cmp rax,[esi]
+	
+		ja lskip1
+	
+		xchg rax,[esi]
+
+		lskip1:	loop lup1
+	
+		mov [large],rax
+
+	
+	
+		dispmsg larg_msg,larg_len
+	
+		mov rbx,[large]
+	
+		call disp_num
+
+	
+		dispmsg thankmsg,thank_len
+
+		
+exit:	mov eax,01
+	
+			mov ebx,0
+	
+			int 80h
+
+	
+
+disp_num:
+	
+		mov edi,dnum_buff	;point esi to buffer
+
+	
+		mov ecx,16		;load number of digits to display 
+
+		
+
+dispup1:
+			rol rbx,4		;rotate number left by four bits
+	
+			mov dl,bl		;move lower byte in dl
+	
+			and dl,0fh		;mask upper digit of byte in dl
+	
+			add dl,30h		;add 30h to calculate ASCII code
+	
+			cmp dl,39h		;compare with 39h
+	
+			jbe dispskip1		;if less than 39h akip adding 07 more 
+	
+			add dl,07h		;else add 07
+
+
+
+		dispskip1:
+			mov [edi],dl		;store ASCII code in buffer
+	
+				inc edi			;point to next byte
+	
+				loop dispup1		;decrement the count 									;of digits to display
+				
+				;if not zero jump to repeat
+
+	
+				dispmsg dnum_buff,16
+	
+	
+				ret
+
+---------------------------------------------------------------------------------
+	[student@localhost]$ nasm -f elf64 MPL3.asm
+
+	[student@localhost]$ ld -o MPL3 MPL3.o
+
+	[student@localhost]$ ./MPL3
+
+
+	Array Elements Are:: 
+
+	00000000FA100001
+
+	000000000B200002
+
+	000000000FFF0003
+
+	000000000D400004
+
+	0000000000500005
+
+	Largest Number is::00000000FA100001
+
+
